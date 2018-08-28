@@ -203,3 +203,43 @@ func TestInsert(t *testing.T) {
 		}
 	}
 }
+
+type testOverlapPair struct {
+	node     *Node
+	schedule schedule.Schedule
+	expected interface{}
+}
+
+func TestOverlap(t *testing.T) {
+	var testCases = []testOverlapPair{
+		{
+			node:     &Node{Schedule: schedule.Schedule{0, 2}},
+			schedule: schedule.Schedule{0, 1},
+			expected: true,
+		},
+		{
+			node:     &Node{Schedule: schedule.Schedule{0, 2}},
+			schedule: schedule.Schedule{2, 4},
+			expected: false,
+		},
+		{
+			node:     &Node{Schedule: schedule.Schedule{0, 2}},
+			schedule: schedule.Schedule{0, 2},
+			expected: false,
+		},
+	}
+
+	for i, pair := range testCases {
+
+		result := pair.node.Overlap(pair.schedule)
+
+		if !reflect.DeepEqual(pair.expected, result) {
+			t.Error(
+				"[ Testcase: TestInsert ", i, " ]\n",
+				"For Node:     ", fmt.Sprintf("%s", pair.node.Dump(0, "")), "\n",
+				"Expected:", fmt.Sprintf("\n%v", pair.expected), "\n",
+				"Got:     ", fmt.Sprintf("\n%v", result), "\n",
+			)
+		}
+	}
+}
