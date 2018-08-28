@@ -21,6 +21,13 @@ func TestInsert(t *testing.T) {
 			},
 			expected: &Node{Schedule: schedule.Schedule{0, 1}, MaxEnd: 2, Right: &Node{Schedule: schedule.Schedule{0, 2}, MaxEnd: 2, bal: 0}, bal: 1},
 		},
+		{
+			schedules: []schedule.Schedule{
+				schedule.Schedule{0, 2},
+				schedule.Schedule{0, 1},
+			},
+			expected: &Node{Schedule: schedule.Schedule{0, 2}, MaxEnd: 2, Left: &Node{Schedule: schedule.Schedule{0, 1}, MaxEnd: 1, bal: 0}, bal: -1},
+		},
 	}
 
 	for i, pair := range testCases {
