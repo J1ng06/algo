@@ -89,6 +89,7 @@ func (n *Node) Insert(Schedule schedule.Schedule) bool {
 	}
 
 	return false
+
 }
 
 func (n *Node) rotateLeft(c *Node) {
@@ -164,7 +165,8 @@ func (n *Node) rotateRightLeft(c *Node) {
 }
 
 func (n *Node) rotateLeftRight(c *Node) {
-	c.Left.Right.bal = -1 // The considerations from rotateRightLeft also apply here.
+	// The considerations from rotateRightLeft also apply here.
+	c.Left.Right.bal = -1
 	c.rotateLeft(c.Left)
 	c.Left.bal = -1
 	n.rotateRight(c)
@@ -197,24 +199,7 @@ func (n *Node) Overlap(schedule schedule.Schedule) bool {
 
 }
 
-func Overlap(n *Node, schedule schedule.Schedule) (out []schedule.Schedule) {
-
-	if n.Overlap(schedule) {
-		out = append(out, n.Schedule)
-	}
-
-	if n.Left != nil && n.Left.MaxEnd > schedule.Start {
-		out = append(out, Overlap(n.Left, schedule)...)
-	}
-	if n.Right != nil && n.Schedule.Start < schedule.End {
-		out = append(out, Overlap(n.Right, schedule)...)
-	}
-
-	return
-
-}
-
-func (n *Node) Dump(i int, lr string) {
+func (n *Node) Dump(i int, lr string) (out string) {
 	if n == nil {
 		return
 	}
@@ -223,7 +208,10 @@ func (n *Node) Dump(i int, lr string) {
 	if i > 0 {
 		indent = strings.Repeat(" ", (i-1)*4) + "+" + lr + "--"
 	}
-	fmt.Printf("%s%s[MaxEnd=%d][bal=%d]\n", indent, n.Schedule.String(), n.MaxEnd, n.bal)
-	n.Left.Dump(i+1, "L")
-	n.Right.Dump(i+1, "R")
+
+	out += fmt.Sprintf("%s%s[MaxEnd=%d][bal=%d]\n", indent, n.Schedule.String(), n.MaxEnd, n.bal)
+	out += n.Left.Dump(i+1, "L")
+	out += n.Right.Dump(i+1, "R")
+
+	return
 }

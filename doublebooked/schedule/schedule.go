@@ -16,3 +16,11 @@ func (s Schedule) String() string {
 func (s Schedule) IsValid() bool {
 	return s.Start < s.End
 }
+
+func Flattern(schedule []Schedule) (out string) {
+
+	for i := 0; i < len(schedule); i++ {
+		out += fmt.Sprintf("%s ", schedule[i].String())
+	}
+	return out
+}
