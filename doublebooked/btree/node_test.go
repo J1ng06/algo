@@ -23,10 +23,17 @@ func TestInsert(t *testing.T) {
 		},
 		{
 			schedules: []schedule.Schedule{
-				schedule.Schedule{0, 2},
-				schedule.Schedule{0, 1},
+				schedule.Schedule{1, 2},
+				schedule.Schedule{0, 10},
 			},
-			expected: &Node{Schedule: schedule.Schedule{0, 2}, MaxEnd: 2, Left: &Node{Schedule: schedule.Schedule{0, 1}, MaxEnd: 1, bal: 0}, bal: -1},
+			expected: &Node{Schedule: schedule.Schedule{1, 2}, MaxEnd: 10, Left: &Node{Schedule: schedule.Schedule{0, 10}, MaxEnd: 10, bal: 0}, bal: -1},
+		},
+		{
+			schedules: []schedule.Schedule{
+				schedule.Schedule{1, 2},
+				schedule.Schedule{1, 2},
+			},
+			expected: &Node{Schedule: schedule.Schedule{1, 2}, MaxEnd: 2, bal: 0},
 		},
 	}
 
