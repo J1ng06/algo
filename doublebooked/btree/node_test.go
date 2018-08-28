@@ -94,6 +94,67 @@ func TestRotateRight(t *testing.T) {
 
 }
 
+func TestRebalance(t *testing.T) {
+	var testCases = []testRotatePair{
+		{
+			node: &Node{
+				Schedule: schedule.Schedule{0, 3},
+				MaxEnd:   3,
+				Left: &Node{
+					Schedule: schedule.Schedule{0, 2},
+					MaxEnd:   2,
+					Left: &Node{
+						Schedule: schedule.Schedule{0, 1},
+						MaxEnd:   1,
+					},
+					bal: -1},
+				bal: -2},
+			expected: &Node{
+				Schedule: schedule.Schedule{0, 2},
+				MaxEnd:   3,
+				Left:     &Node{Schedule: schedule.Schedule{0, 1}, MaxEnd: 1, bal: 0},
+				Right:    &Node{Schedule: schedule.Schedule{0, 3}, MaxEnd: 3, bal: 0},
+				bal:      0},
+		},
+		{
+			node: &Node{
+				Schedule: schedule.Schedule{0, 1},
+				MaxEnd:   3,
+				Right: &Node{
+					Schedule: schedule.Schedule{0, 2},
+					MaxEnd:   3,
+					Right: &Node{
+						Schedule: schedule.Schedule{0, 3},
+						MaxEnd:   3,
+					},
+					bal: 1},
+				bal: 2},
+			expected: &Node{
+				Schedule: schedule.Schedule{0, 2},
+				MaxEnd:   3,
+				Left:     &Node{Schedule: schedule.Schedule{0, 1}, MaxEnd: 1, bal: 0},
+				Right:    &Node{Schedule: schedule.Schedule{0, 3}, MaxEnd: 3, bal: 0},
+				bal:      0},
+		},
+	}
+
+	for i, pair := range testCases {
+
+		fakeNode := &Node{}
+		fakeNode.Left = pair.node
+		fakeNode.rebalance(pair.node)
+		if !reflect.DeepEqual(pair.expected, fakeNode.Left) {
+			t.Error(
+				"[ Testcase: TestRebalance ", i, " ]\n",
+				"For Node:     ", fmt.Sprintf("%s", pair.node.Dump(0, "")), "\n",
+				"Expected:", fmt.Sprintf("\n%s", pair.expected.(*Node).Dump(0, "")), "\n",
+				"Got:     ", fmt.Sprintf("\n%s", fakeNode.Left.Dump(0, "")), "\n",
+			)
+		}
+	}
+
+}
+
 type testInsertPair struct {
 	schedules []schedule.Schedule
 	expected  interface{}
