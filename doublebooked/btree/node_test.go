@@ -7,13 +7,100 @@ import (
 	"testing"
 )
 
-type testCase struct {
+type testRotatePair struct {
+	node     *Node
+	expected interface{}
+}
+
+func TestRotateLeft(t *testing.T) {
+	var testCases = []testRotatePair{
+		{
+			node: &Node{
+				Schedule: schedule.Schedule{0, 1},
+				MaxEnd:   3,
+				Right: &Node{
+					Schedule: schedule.Schedule{0, 2},
+					MaxEnd:   3,
+					Right: &Node{
+						Schedule: schedule.Schedule{0, 3},
+						MaxEnd:   3,
+					},
+					bal: 1},
+				bal: 2},
+			expected: &Node{
+				Schedule: schedule.Schedule{0, 2},
+				MaxEnd:   3,
+				Left:     &Node{Schedule: schedule.Schedule{0, 1}, MaxEnd: 1, bal: 0},
+				Right:    &Node{Schedule: schedule.Schedule{0, 3}, MaxEnd: 3, bal: 0},
+				bal:      0},
+		},
+	}
+
+	for i, pair := range testCases {
+
+		fakeNode := &Node{}
+		fakeNode.Left = pair.node
+		fakeNode.rotateLeft(pair.node)
+		if !reflect.DeepEqual(pair.expected, fakeNode.Left) {
+			t.Error(
+				"[ Testcase: TestRotateLeft ", i, " ]\n",
+				"For Node:     ", fmt.Sprintf("%s", pair.node.Dump(0, "")), "\n",
+				"Expected:", fmt.Sprintf("\n%s", pair.expected.(*Node).Dump(0, "")), "\n",
+				"Got:     ", fmt.Sprintf("\n%s", fakeNode.Left.Dump(0, "")), "\n",
+			)
+		}
+	}
+
+}
+
+func TestRotateRight(t *testing.T) {
+	var testCases = []testRotatePair{
+		{
+			node: &Node{
+				Schedule: schedule.Schedule{0, 3},
+				MaxEnd:   3,
+				Left: &Node{
+					Schedule: schedule.Schedule{0, 2},
+					MaxEnd:   2,
+					Left: &Node{
+						Schedule: schedule.Schedule{0, 1},
+						MaxEnd:   1,
+					},
+					bal: -1},
+				bal: -2},
+			expected: &Node{
+				Schedule: schedule.Schedule{0, 2},
+				MaxEnd:   3,
+				Left:     &Node{Schedule: schedule.Schedule{0, 1}, MaxEnd: 1, bal: 0},
+				Right:    &Node{Schedule: schedule.Schedule{0, 3}, MaxEnd: 3, bal: 0},
+				bal:      0},
+		},
+	}
+
+	for i, pair := range testCases {
+
+		fakeNode := &Node{}
+		fakeNode.Left = pair.node
+		fakeNode.rotateRight(pair.node)
+		if !reflect.DeepEqual(pair.expected, fakeNode.Left) {
+			t.Error(
+				"[ Testcase: TestRotateRight ", i, " ]\n",
+				"For Node:     ", fmt.Sprintf("%s", pair.node.Dump(0, "")), "\n",
+				"Expected:", fmt.Sprintf("\n%s", pair.expected.(*Node).Dump(0, "")), "\n",
+				"Got:     ", fmt.Sprintf("\n%s", fakeNode.Left.Dump(0, "")), "\n",
+			)
+		}
+	}
+
+}
+
+type testInsertPair struct {
 	schedules []schedule.Schedule
 	expected  interface{}
 }
 
 func TestInsert(t *testing.T) {
-	var testCases = []testCase{
+	var testCases = []testInsertPair{
 		{
 			schedules: []schedule.Schedule{
 				schedule.Schedule{0, 1},
