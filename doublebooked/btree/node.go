@@ -15,6 +15,29 @@ type Node struct {
 	bal      int // height(n.Right) - height(n.Left)
 }
 
+func max(integers ...int) int {
+	max := integers[0]
+
+	for i := 1; len(integers) > 2 && i < len(integers); i++ {
+		if integers[i] > max {
+			max = integers[i]
+		}
+	}
+	return max
+}
+
+func (n *Node) updateMaxEnd() {
+	if n.Left != nil && n.Right != nil {
+		n.MaxEnd = max(n.Right.MaxEnd, n.Left.MaxEnd, n.Schedule.End)
+	} else if n.Left == nil && n.Right != nil {
+		n.MaxEnd = max(n.Right.MaxEnd, n.Schedule.End)
+	} else if n.Left != nil && n.Right == nil {
+		n.MaxEnd = max(n.Left.MaxEnd, n.Schedule.End)
+	} else {
+		n.MaxEnd = n.Schedule.End
+	}
+}
+
 func (n *Node) Insert(Schedule schedule.Schedule) bool {
 
 	nSchedule := n.Schedule
@@ -41,9 +64,8 @@ func (n *Node) Insert(Schedule schedule.Schedule) bool {
 
 		}
 
-		if n.MaxEnd < Schedule.End {
-			n.MaxEnd = Schedule.End
-		}
+		n.MaxEnd = max(n.MaxEnd, Schedule.End)
+
 		if n.Left.Insert(Schedule) {
 			if n.Left.bal < -1 || n.Left.bal > 1 {
 				n.rebalance(n.Left)
@@ -70,9 +92,9 @@ func (n *Node) Insert(Schedule schedule.Schedule) bool {
 			return false
 
 		}
-		if n.MaxEnd < Schedule.End {
-			n.MaxEnd = Schedule.End
-		}
+
+		n.MaxEnd = max(n.MaxEnd, Schedule.End)
+
 		if n.Right.Insert(Schedule) {
 			if n.Right.bal < -1 || n.Right.bal > 1 {
 				n.rebalance(n.Right)
@@ -97,24 +119,11 @@ func (n *Node) rotateLeft(c *Node) {
 	fmt.Println("rotateLeft ")
 	r := c.Right
 	c.Right = r.Left
-	if c.Right == nil {
-		if c.Left != nil && c.MaxEnd <= c.Left.MaxEnd {
-			c.MaxEnd = c.Left.MaxEnd
-		} else {
-			c.MaxEnd = c.Schedule.End
-		}
-	} else if c.Right.MaxEnd > c.Schedule.End {
-		c.MaxEnd = c.Right.MaxEnd
-	} else if c.Left.MaxEnd > c.Schedule.End {
-		c.MaxEnd = c.Left.MaxEnd
-	} else {
-		c.MaxEnd = c.Schedule.End
-	}
+
+	c.updateMaxEnd()
 
 	r.Left = c
-	if r.MaxEnd < c.MaxEnd {
-		r.MaxEnd = c.MaxEnd
-	}
+	r.updateMaxEnd()
 
 	if c == n.Left {
 		n.Left = r
@@ -129,24 +138,12 @@ func (n *Node) rotateRight(c *Node) {
 	fmt.Println("rotateRight ")
 	l := c.Left
 	c.Left = l.Right
-	if c.Left == nil {
-		if c.Right != nil && c.MaxEnd <= c.Right.MaxEnd {
-			c.MaxEnd = c.Right.MaxEnd
-		} else {
-			c.MaxEnd = c.Schedule.End
-		}
-	} else if c.Left.MaxEnd > c.Schedule.End {
-		c.MaxEnd = c.Left.MaxEnd
-	} else if c.Right.MaxEnd > c.Schedule.End {
-		c.MaxEnd = c.Right.MaxEnd
-	} else {
-		c.MaxEnd = c.Schedule.End
-	}
+
+	c.updateMaxEnd()
 
 	l.Right = c
-	if l.MaxEnd < c.MaxEnd {
-		l.MaxEnd = c.MaxEnd
-	}
+	l.updateMaxEnd()
+
 	if c == n.Left {
 		n.Left = l
 	} else {
