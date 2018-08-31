@@ -2,6 +2,7 @@ package avltree
 
 import (
 	"algo/doublebooked/schedule"
+	"algo/doublebooked/utils"
 	"fmt"
 	"reflect"
 	"strings"
@@ -15,42 +16,31 @@ type Node struct {
 	bal      int // height(n.Right) - height(n.Left)
 }
 
-func max(integers ...int) int {
-	max := integers[0]
-
-	for i := 1; len(integers) > 1 && i < len(integers); i++ {
-		if integers[i] > max {
-			max = integers[i]
-		}
-	}
-	return max
-}
-
 func (n *Node) updateMaxEnd() {
 	if n.Left != nil && n.Right != nil {
-		n.MaxEnd = max(n.Right.MaxEnd, n.Left.MaxEnd, n.Schedule.End)
+		n.MaxEnd = utils.Max(n.Right.MaxEnd, n.Left.MaxEnd, n.Schedule.End)
 	} else if n.Left == nil && n.Right != nil {
-		n.MaxEnd = max(n.Right.MaxEnd, n.Schedule.End)
+		n.MaxEnd = utils.Max(n.Right.MaxEnd, n.Schedule.End)
 	} else if n.Left != nil && n.Right == nil {
-		n.MaxEnd = max(n.Left.MaxEnd, n.Schedule.End)
+		n.MaxEnd = utils.Max(n.Left.MaxEnd, n.Schedule.End)
 	} else {
 		n.MaxEnd = n.Schedule.End
 	}
 }
 
-func (n *Node) Insert(Schedule schedule.Schedule) bool {
+func (n *Node) Insert(s schedule.Schedule) (updateBal bool, dup bool) {
 
 	nSchedule := n.Schedule
 	nBal := n.bal
 
 	switch {
-	case reflect.DeepEqual(nSchedule, Schedule):
-		return false
-	case nSchedule.Start > Schedule.Start || (nSchedule.Start == Schedule.Start && nSchedule.End > Schedule.End):
+	case reflect.DeepEqual(nSchedule, s):
+		return false, true
+	case nSchedule.Start > s.Start || (nSchedule.Start == s.Start && nSchedule.End > s.End):
 
 		if n.Left == nil {
 
-			n.Left = &Node{Schedule: Schedule, MaxEnd: Schedule.End}
+			n.Left = &Node{Schedule: s, MaxEnd: s.End}
 
 			n.updateMaxEnd()
 
@@ -62,9 +52,9 @@ func (n *Node) Insert(Schedule schedule.Schedule) bool {
 
 		} else {
 
-			n.MaxEnd = max(n.MaxEnd, Schedule.End)
+			n.MaxEnd = utils.Max(n.MaxEnd, s.End)
 
-			if n.Left.Insert(Schedule) {
+			if updateBal, dup = n.Left.Insert(s); updateBal && !dup {
 				if n.Left.bal < -1 || n.Left.bal > 1 {
 					n.rebalance(n.Left)
 				} else {
@@ -72,10 +62,10 @@ func (n *Node) Insert(Schedule schedule.Schedule) bool {
 				}
 			}
 		}
-	case nSchedule.Start < Schedule.Start || (nSchedule.Start == Schedule.Start && nSchedule.End < Schedule.End):
+	case nSchedule.Start < s.Start || (nSchedule.Start == s.Start && nSchedule.End < s.End):
 
 		if n.Right == nil {
-			n.Right = &Node{Schedule: Schedule, MaxEnd: Schedule.End}
+			n.Right = &Node{Schedule: s, MaxEnd: s.End}
 
 			n.updateMaxEnd()
 			if n.Left == nil {
@@ -85,9 +75,9 @@ func (n *Node) Insert(Schedule schedule.Schedule) bool {
 			}
 
 		} else {
-			n.MaxEnd = max(n.MaxEnd, Schedule.End)
+			n.MaxEnd = utils.Max(n.MaxEnd, s.End)
 
-			if n.Right.Insert(Schedule) {
+			if updateBal, dup = n.Right.Insert(s); updateBal && !dup {
 				if n.Right.bal < -1 || n.Right.bal > 1 {
 					n.rebalance(n.Right)
 				} else {
@@ -100,16 +90,16 @@ func (n *Node) Insert(Schedule schedule.Schedule) bool {
 
 	if nBal != n.bal && nBal != 0 {
 		n.bal = nBal
-		return true
+		return true, dup
 	}
 	n.bal = nBal
-	return false
+	return false, dup
 
 }
 
 func (n *Node) rotateLeft(c *Node) {
 
-	fmt.Println("rotateLeft ", c.Schedule, " node n ", n.Schedule)
+	//fmt.Println("rotateLeft ", c.Schedule, " node n ", n.Schedule)
 	r := c.Right
 	c.Right = r.Left
 
@@ -128,7 +118,8 @@ func (n *Node) rotateLeft(c *Node) {
 }
 
 func (n *Node) rotateRight(c *Node) {
-	fmt.Println("rotateRight ", c.Schedule, " node n ", n.Schedule)
+
+	//fmt.Println("rotateRight ", c.Schedule, " node n ", n.Schedule)
 	l := c.Left
 	c.Left = l.Right
 
@@ -164,9 +155,9 @@ func (n *Node) rotateLeftRight(c *Node) {
 }
 
 func (n *Node) rebalance(c *Node) {
-	fmt.Println("rebalance c ", c.Schedule, "; node n ", n.Schedule)
+	//fmt.Println("rebalance c ", c.Schedule, "; node n ", n.Schedule)
 
-	fmt.Println(c.Dump(0, ""))
+	//fmt.Println(c.Dump(0, ""))
 	switch {
 	case c.bal == -2 && c.Left.bal == -1:
 		n.rotateRight(c)
@@ -179,30 +170,37 @@ func (n *Node) rebalance(c *Node) {
 	}
 }
 
-func Overlap(n *Node, schedule schedule.Schedule) (out []schedule.Schedule) {
+func (n *Node) overlap(s schedule.Schedule) ([2]schedule.Schedule, bool) {
 
-	if n.Overlap(schedule) {
-		out = append(out, n.Schedule)
+	if reflect.DeepEqual(n.Schedule, s) {
+		return [2]schedule.Schedule{}, false
 	}
 
-	if n.Left != nil && n.Left.MaxEnd > schedule.Start {
-		out = append(out, Overlap(n.Left, schedule)...)
-	}
-	if n.Right != nil && n.Schedule.Start < schedule.End {
-		out = append(out, Overlap(n.Right, schedule)...)
+	out := schedule.SortSchedules([2]schedule.Schedule{n.Schedule, s})
+	if out[0].Start < out[1].End && out[1].Start < out[0].End {
+		return out, true
 	}
 
-	return
+	return out, false
 
 }
 
-func (n *Node) Overlap(schedule schedule.Schedule) bool {
+func Overlap(n *Node, s schedule.Schedule) (out map[[2]schedule.Schedule]interface{}) {
 
-	if reflect.DeepEqual(n.Schedule, schedule) {
-		return false
+	out = make(map[[2]schedule.Schedule]interface{})
+
+	if pair, ok := n.overlap(s); ok {
+		out[pair] = new(interface{})
 	}
 
-	return n.Schedule.Start < schedule.End && schedule.Start < n.Schedule.End
+	if n.Left != nil && n.Left.MaxEnd > s.Start {
+		out = utils.MapUnion(out, Overlap(n.Left, s))
+	}
+	if n.Right != nil && n.Schedule.Start < s.End {
+		out = utils.MapUnion(out, Overlap(n.Right, s))
+	}
+
+	return
 
 }
 

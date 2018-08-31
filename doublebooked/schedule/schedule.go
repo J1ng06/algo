@@ -24,3 +24,18 @@ func Flattern(schedule []Schedule) (out string) {
 	}
 	return out
 }
+
+func SortSchedules(schedules [2]Schedule) (out [2]Schedule) {
+
+	out = [2]Schedule{
+		schedules[0],
+		schedules[1],
+	}
+
+	if schedules[0].Start > schedules[1].Start || schedules[0].Start == schedules[1].Start && schedules[0].End > schedules[1].End {
+		out[0] = schedules[1]
+		out[1] = schedules[0]
+	}
+
+	return
+}

@@ -7,37 +7,6 @@ import (
 	"testing"
 )
 
-type testMax struct {
-	integers []int
-	expected interface{}
-}
-
-func TestMax(t *testing.T) {
-	var testCases = []testMax{
-		{
-			integers: []int{0},
-			expected: 0,
-		},
-		{
-			integers: []int{3, 2, 3},
-			expected: 3,
-		},
-	}
-
-	for i, pair := range testCases {
-		result := max(pair.integers...)
-		if result != pair.expected {
-			t.Error(
-				"[ Testcase: TestMax ", i, " ]\n",
-				"For Node:     ", fmt.Sprintf("%+v", pair.integers), "\n",
-				"Expected:", fmt.Sprintf("\n%v", pair.expected), "\n",
-				"Got:     ", fmt.Sprintf("\n%v", result), "\n",
-			)
-		}
-	}
-
-}
-
 type testInsertPair struct {
 	fakeRoot  *Node
 	schedules []schedule.Schedule
@@ -578,41 +547,108 @@ func TestRebalance(t *testing.T) {
 
 }
 
-type testOverlapPair struct {
-	node     *Node
-	schedule schedule.Schedule
-	expected interface{}
+type testNodeOverlapPair struct {
+	node       *Node
+	schedule   schedule.Schedule
+	overlapped bool
+	expected   [2]schedule.Schedule
 }
 
-func TestOverlap(t *testing.T) {
-	var testCases = []testOverlapPair{
+func TestNodeOverlap(t *testing.T) {
+	var testCases = []testNodeOverlapPair{
 		{
-			node:     &Node{Schedule: schedule.Schedule{0, 2}},
-			schedule: schedule.Schedule{0, 1},
-			expected: true,
+			node:       &Node{Schedule: schedule.Schedule{0, 2}},
+			schedule:   schedule.Schedule{8, 9},
+			overlapped: false,
 		},
 		{
-			node:     &Node{Schedule: schedule.Schedule{0, 2}},
-			schedule: schedule.Schedule{2, 4},
-			expected: false,
+			node:       &Node{Schedule: schedule.Schedule{0, 2}},
+			schedule:   schedule.Schedule{2, 4},
+			overlapped: false,
 		},
 		{
-			node:     &Node{Schedule: schedule.Schedule{0, 2}},
-			schedule: schedule.Schedule{0, 2},
-			expected: false,
+			node:       &Node{Schedule: schedule.Schedule{0, 2}},
+			schedule:   schedule.Schedule{0, 2},
+			overlapped: false,
+		},
+		{
+			node:       &Node{Schedule: schedule.Schedule{0, 2}},
+			schedule:   schedule.Schedule{0, 1},
+			overlapped: true,
+			expected:   [2]schedule.Schedule{schedule.Schedule{0, 1}, schedule.Schedule{0, 2}},
+		},
+		{
+			node:       &Node{Schedule: schedule.Schedule{0, 2}},
+			schedule:   schedule.Schedule{1, 3},
+			overlapped: true,
+			expected:   [2]schedule.Schedule{schedule.Schedule{0, 2}, schedule.Schedule{1, 3}},
 		},
 	}
 
 	for i, pair := range testCases {
 
-		result := pair.node.Overlap(pair.schedule)
+		result, ok := pair.node.overlap(pair.schedule)
 
+		if !reflect.DeepEqual(pair.overlapped, ok) {
+			t.Error(
+				"[ Testcase: TestInsert ", i, " ]\n",
+				"For Node:     ", fmt.Sprintf("%s %s", pair.node.Schedule, pair.schedule), "\n",
+				"Expected:", fmt.Sprintf("\n%v %v", pair.expected, pair.overlapped), "\n",
+				"Got:     ", fmt.Sprintf("\n%v %v", result, ok), "\n",
+			)
+		} else if ok && pair.overlapped && !reflect.DeepEqual(pair.expected, result) {
+			t.Error(
+				"[ Testcase: TestInsert ", i, " ]\n",
+				"For Node:     ", fmt.Sprintf("%s %s", pair.node.Schedule, pair.schedule), "\n",
+				"Expected:", fmt.Sprintf("\n%v %v", pair.expected, pair.overlapped), "\n",
+				"Got:     ", fmt.Sprintf("\n%v %v", result, ok), "\n",
+			)
+		}
+
+	}
+}
+
+type testOverlapPair struct {
+	node     *Node
+	schedule schedule.Schedule
+	expected [][2]schedule.Schedule
+}
+
+func TestOverlap(t *testing.T) {
+	var testCases = []testOverlapPair{
+		{
+			node: &Node{
+				Schedule: schedule.Schedule{0, 3},
+				MaxEnd:   3,
+				Left: &Node{
+					Schedule: schedule.Schedule{0, 2},
+					MaxEnd:   2,
+					Left: &Node{
+						Schedule: schedule.Schedule{0, 1},
+						MaxEnd:   1,
+					},
+					bal: -1},
+				bal: -2},
+			schedule: schedule.Schedule{0, 1},
+			expected: [][2]schedule.Schedule{
+				{schedule.Schedule{0, 1}, schedule.Schedule{0, 2}},
+				{schedule.Schedule{0, 1}, schedule.Schedule{0, 3}},
+			},
+		},
+	}
+
+	for i, pair := range testCases {
+
+		result := Overlap(pair.node, pair.schedule)
+		resultSlice := [][2]schedule.Schedule{}
+		for k := range result {
+			resultSlice = append(resultSlice, k)
+		}
 		if !reflect.DeepEqual(pair.expected, result) {
 			t.Error(
 				"[ Testcase: TestInsert ", i, " ]\n",
-				"For Node:     ", fmt.Sprintf("%s", pair.node.Dump(0, "")), "\n",
-				"Expected:", fmt.Sprintf("\n%v", pair.expected), "\n",
-				"Got:     ", fmt.Sprintf("\n%v", result), "\n",
+				"Expected:", fmt.Sprintf("\n%v %v", pair.expected), "\n",
+				"Got:     ", fmt.Sprintf("\n%v %v", resultSlice), "\n",
 			)
 		}
 	}

@@ -9,40 +9,25 @@ type Tree struct {
 	Root *Node
 }
 
-func NewTree(schedules []schedule.Schedule) (tree *Tree, err error) {
+func (t *Tree) Insert(schedule schedule.Schedule) (err error, dup bool) {
 
-	tree = new(Tree)
-	for i := 0; i < len(schedules); i++ {
-
-		if !schedules[i].IsValid() {
-			err = fmt.Errorf("Invalid Schedule Input %s", schedules[i].String())
-			return nil, err
-		}
-		fmt.Println("Insert ----", schedules[i])
-		tree.Insert(schedules[i])
-		fmt.Println(tree.Dump())
-
+	if !schedule.IsValid() {
+		err = fmt.Errorf("Invalid Schedule Input %s", schedule)
+		return err, false
 	}
-
-	return
-
-}
-
-func (t *Tree) Insert(schedule schedule.Schedule) {
-
 	if t.Root == nil {
 		t.Root = &Node{Schedule: schedule, MaxEnd: schedule.End}
 		return
 	}
-	t.Root.Insert(schedule)
+	_, dup = t.Root.Insert(schedule)
 	if t.Root.bal < -1 || t.Root.bal > 1 {
 		t.rebalance()
 	}
 
+	return nil, dup
 }
 
 func (t *Tree) rebalance() {
-	fmt.Println("rebalance from tree.go")
 	fakeParent := &Node{Left: t.Root, Schedule: schedule.Schedule{}}
 	fakeParent.rebalance(t.Root)
 	t.Root = fakeParent.Left

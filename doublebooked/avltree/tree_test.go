@@ -12,48 +12,48 @@ type testNewTreePair struct {
 	expected  interface{}
 }
 
-func TestNewTree(t *testing.T) {
-	testCases := []testNewTreePair{
-		{
-			schedules: []schedule.Schedule{
-				schedule.Schedule{0, 1},
-				schedule.Schedule{0, 2},
-			},
-			expected: &Tree{Root: &Node{Schedule: schedule.Schedule{0, 1}, MaxEnd: 2, Right: &Node{Schedule: schedule.Schedule{0, 2}, MaxEnd: 2, bal: 0}, bal: 1}},
-		},
-		{
-			schedules: []schedule.Schedule{
-				schedule.Schedule{1, 1},
-				schedule.Schedule{0, 2},
-			},
-			expected: fmt.Errorf("Invalid Schedule Input [1, 1]"),
-		},
-	}
-	for i, pair := range testCases {
+// func TestNewTree(t *testing.T) {
+// 	testCases := []testNewTreePair{
+// 		{
+// 			schedules: []schedule.Schedule{
+// 				schedule.Schedule{0, 1},
+// 				schedule.Schedule{0, 2},
+// 			},
+// 			expected: &Tree{Root: &Node{Schedule: schedule.Schedule{0, 1}, MaxEnd: 2, Right: &Node{Schedule: schedule.Schedule{0, 2}, MaxEnd: 2, bal: 0}, bal: 1}},
+// 		},
+// 		{
+// 			schedules: []schedule.Schedule{
+// 				schedule.Schedule{1, 1},
+// 				schedule.Schedule{0, 2},
+// 			},
+// 			expected: fmt.Errorf("Invalid Schedule Input [1, 1]"),
+// 		},
+// 	}
+// 	for i, pair := range testCases {
 
-		result, err := NewTree(pair.schedules)
-		if err != nil {
-			if !reflect.DeepEqual(pair.expected, err) {
-				t.Error(
-					"[ Testcase: TestRotateLeft ", i, " ]\n",
-					"For Schedules:     ", fmt.Sprintf("%+v", pair.schedules), "\n",
-					"Expected:", fmt.Sprintf("\n%s", pair.expected.(error).Error()), "\n",
-					"Got:     ", fmt.Sprintf("\n%s", err.Error()), "\n",
-				)
-			}
-		} else {
-			if !reflect.DeepEqual(pair.expected, result) {
-				t.Error(
-					"[ Testcase: TestNewTree ", i, " ]\n",
-					"For Schedules:     ", fmt.Sprintf("%+v", pair.schedules), "\n",
-					"Expected:", fmt.Sprintf("\n%s", pair.expected.(*Tree).Dump()), "\n",
-					"Got:     ", fmt.Sprintf("\n%s", result.Dump()), "\n",
-				)
-			}
-		}
-	}
+// 		result, err := NewTree(pair.schedules)
+// 		if err != nil {
+// 			if !reflect.DeepEqual(pair.expected, err) {
+// 				t.Error(
+// 					"[ Testcase: TestRotateLeft ", i, " ]\n",
+// 					"For Schedules:     ", fmt.Sprintf("%+v", pair.schedules), "\n",
+// 					"Expected:", fmt.Sprintf("\n%s", pair.expected.(error).Error()), "\n",
+// 					"Got:     ", fmt.Sprintf("\n%s", err.Error()), "\n",
+// 				)
+// 			}
+// 		} else {
+// 			if !reflect.DeepEqual(pair.expected, result) {
+// 				t.Error(
+// 					"[ Testcase: TestNewTree ", i, " ]\n",
+// 					"For Schedules:     ", fmt.Sprintf("%+v", pair.schedules), "\n",
+// 					"Expected:", fmt.Sprintf("\n%s", pair.expected.(*Tree).Dump()), "\n",
+// 					"Got:     ", fmt.Sprintf("\n%s", result.Dump()), "\n",
+// 				)
+// 			}
+// 		}
+// 	}
 
-}
+// }
 
 func TestTreeInsert(t *testing.T) {
 	testCases := []testNewTreePair{
@@ -104,7 +104,11 @@ func TestTreeInsert(t *testing.T) {
 	}
 	for i, pair := range testCases {
 
-		tree, _ := NewTree(pair.schedules)
+		tree := new(Tree)
+
+		for i := 0; i < len(pair.schedules); i++ {
+			tree.Insert(pair.schedules[i])
+		}
 
 		if !reflect.DeepEqual(pair.expected, tree) {
 			t.Error(
