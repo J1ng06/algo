@@ -20,6 +20,10 @@ func TestMax(t *testing.T) {
 			integers: []int{3, 2, 3},
 			expected: 3,
 		},
+		{
+			integers: []int{2, 4},
+			expected: 4,
+		},
 	}
 
 	for i, pair := range testCases {

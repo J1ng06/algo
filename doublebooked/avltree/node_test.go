@@ -644,11 +644,14 @@ func TestOverlap(t *testing.T) {
 		for k := range result {
 			resultSlice = append(resultSlice, k)
 		}
-		if !reflect.DeepEqual(pair.expected, result) {
+		for _, v := range pair.expected {
+			delete(result, v)
+		}
+		if len(pair.expected) != len(resultSlice) || len(result) > 0 {
 			t.Error(
 				"[ Testcase: TestInsert ", i, " ]\n",
-				"Expected:", fmt.Sprintf("\n%v %v", pair.expected), "\n",
-				"Got:     ", fmt.Sprintf("\n%v %v", resultSlice), "\n",
+				"Expected:", fmt.Sprintf("\n%+v", pair.expected), "\n",
+				"Got:     ", fmt.Sprintf("\n%+v", resultSlice), "\n",
 			)
 		}
 	}
