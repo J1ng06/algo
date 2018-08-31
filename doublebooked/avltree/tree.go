@@ -1,4 +1,4 @@
-package btree
+package avltree
 
 import (
 	"algo/doublebooked/schedule"
@@ -11,16 +11,16 @@ type Tree struct {
 
 func NewTree(schedules []schedule.Schedule) (tree *Tree, err error) {
 
+	tree = new(Tree)
 	for i := 0; i < len(schedules); i++ {
-
-		tree = new(Tree)
 
 		if !schedules[i].IsValid() {
 			err = fmt.Errorf("Invalid Schedule Input %s", schedules[i].String())
 			return nil, err
 		}
-
+		fmt.Println("Insert ----", schedules[i])
 		tree.Insert(schedules[i])
+		fmt.Println(tree.Dump())
 
 	}
 
@@ -42,28 +42,12 @@ func (t *Tree) Insert(schedule schedule.Schedule) {
 }
 
 func (t *Tree) rebalance() {
+	fmt.Println("rebalance from tree.go")
 	fakeParent := &Node{Left: t.Root, Schedule: schedule.Schedule{}}
 	fakeParent.rebalance(t.Root)
 	t.Root = fakeParent.Left
 }
 
-func (t *Tree) Dump() {
-	t.Root.Dump(0, "")
-}
-
-func Overlap(n *Node, schedule schedule.Schedule) (out []schedule.Schedule) {
-
-	if n.Overlap(schedule) {
-		out = append(out, n.Schedule)
-	}
-
-	if n.Left != nil && n.Left.MaxEnd > schedule.Start {
-		out = append(out, Overlap(n.Left, schedule)...)
-	}
-	if n.Right != nil && n.Schedule.Start < schedule.End {
-		out = append(out, Overlap(n.Right, schedule)...)
-	}
-
-	return
-
+func (t *Tree) Dump() string {
+	return t.Root.Dump(0, "")
 }

@@ -1,9 +1,8 @@
 package main
 
 import (
-	"algo/doublebooked/btree"
+	"algo/doublebooked/avltree"
 	"algo/doublebooked/schedule"
-	"fmt"
 )
 
 func main() {
@@ -48,23 +47,17 @@ func main() {
 		schedule.Schedule{8, 9},
 		schedule.Schedule{13, 14},
 		schedule.Schedule{14, 15},
-		schedule.Schedule{5, 1000},
+		schedule.Schedule{5, 999},
 		schedule.Schedule{1, 2},
 	}
 
-	tree := &btree.Tree{}
-	for i := 0; i < len(schedules); i++ {
-		fmt.Println("Insert " + schedules[i].String())
-		tree.Insert(schedules[i])
-		tree.Dump()
-		fmt.Println()
-	}
+	tree, _ := avltree.NewTree(schedules)
 	tree.Dump()
-	for i := 0; i < len(schedules); i++ {
-		fmt.Printf("-------- Overlap Schedules for: %s --------\n", schedules[i].String())
-		result := btree.Overlap(tree.Root, schedules[i])
-		for j := 0; j < len(result); j++ {
-			fmt.Println(result[j])
-		}
-	}
+	// for i := 0; i < len(schedules); i++ {
+	// 	fmt.Printf("-------- Overlap Schedules for: %s --------\n", schedules[i].String())
+	// 	result := btree.Overlap(tree.Root, schedules[i])
+	// 	for j := 0; j < len(result); j++ {
+	// 		fmt.Println(result[j])
+	// 	}
+	// }
 }

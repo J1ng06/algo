@@ -1,4 +1,4 @@
-package btree
+package avltree
 
 import (
 	"algo/doublebooked/schedule"
@@ -39,7 +39,7 @@ func TestMax(t *testing.T) {
 }
 
 type testInsertPair struct {
-	root      *Node
+	fakeRoot  *Node
 	schedules []schedule.Schedule
 	expected  interface{}
 }
@@ -100,31 +100,88 @@ func TestInsert(t *testing.T) {
 				schedule.Schedule{-2, 10},
 			},
 			expected: &Node{
-				Schedule: schedule.Schedule{0, 10},
+				Schedule: schedule.Schedule{1, 2},
 				MaxEnd:   10,
-				Right:    &Node{Schedule: schedule.Schedule{1, 2}, MaxEnd: 2, bal: 0},
-				Left:     &Node{Schedule: schedule.Schedule{-2, 10}, MaxEnd: 10, bal: 0},
-				bal:      0},
+				Left:     &Node{Schedule: schedule.Schedule{0, 10}, MaxEnd: 10, Left: &Node{Schedule: schedule.Schedule{-2, 10}, MaxEnd: 10, bal: 0}, bal: -1},
+				bal:      -2},
+		},
+		{
+			schedules: []schedule.Schedule{
+				schedule.Schedule{1, 2},
+				schedule.Schedule{2, 10},
+				schedule.Schedule{3, 10},
+			},
+			expected: &Node{
+				Schedule: schedule.Schedule{1, 2},
+				MaxEnd:   10,
+				Right:    &Node{Schedule: schedule.Schedule{2, 10}, MaxEnd: 10, Right: &Node{Schedule: schedule.Schedule{3, 10}, MaxEnd: 10, bal: 0}, bal: 1},
+				bal:      2},
+		},
+		{
+			fakeRoot: &Node{Schedule: schedule.Schedule{5, 20}},
+			schedules: []schedule.Schedule{
+				schedule.Schedule{4, 10},
+				schedule.Schedule{3, 15},
+				schedule.Schedule{2, 10},
+			},
+			expected: &Node{Schedule: schedule.Schedule{3, 15}, MaxEnd: 15,
+				Left:  &Node{Schedule: schedule.Schedule{2, 10}, MaxEnd: 10, bal: 0},
+				Right: &Node{Schedule: schedule.Schedule{4, 10}, MaxEnd: 10, bal: 0}, bal: 0},
+		},
+		{
+			fakeRoot: &Node{Schedule: schedule.Schedule{0, 20}},
+			schedules: []schedule.Schedule{
+				schedule.Schedule{2, 10},
+				schedule.Schedule{3, 15},
+				schedule.Schedule{4, 10},
+			},
+			expected: &Node{Schedule: schedule.Schedule{3, 15}, MaxEnd: 15,
+				Left:  &Node{Schedule: schedule.Schedule{2, 10}, MaxEnd: 10, bal: 0},
+				Right: &Node{Schedule: schedule.Schedule{4, 10}, MaxEnd: 10, bal: 0}, bal: 0},
 		},
 	}
 
 	for i, pair := range testCases {
 
-		if pair.root == nil {
-			pair.root = &Node{Schedule: pair.schedules[0], MaxEnd: pair.schedules[0].End}
-		}
+		if pair.fakeRoot == nil {
+			pair.fakeRoot = &Node{Schedule: pair.schedules[0], MaxEnd: pair.schedules[0].End}
 
-		for j := 1; j < len(pair.schedules); j++ {
-			pair.root.Insert(pair.schedules[j])
-		}
+			for j := 1; j < len(pair.schedules); j++ {
+				pair.fakeRoot.Insert(pair.schedules[j])
+			}
+			if !reflect.DeepEqual(pair.expected, pair.fakeRoot) {
+				t.Error(
+					"[ Testcase: TestInsert ", i, " ]\n",
+					"For Schedules:     ", fmt.Sprintf("%s", schedule.Flattern(pair.schedules)), "\n",
+					"Expected:", fmt.Sprintf("\n%s", pair.expected.(*Node).Dump(0, "")), "\n",
+					"Got:     ", fmt.Sprintf("\n%s", pair.fakeRoot.Dump(0, "")), "\n",
+				)
+			}
+		} else {
+			pair.fakeRoot.Insert(pair.schedules[0])
 
-		if !reflect.DeepEqual(pair.expected, pair.root) {
-			t.Error(
-				"[ Testcase: TestInsert ", i, " ]\n",
-				"For Schedules:     ", fmt.Sprintf("%s", schedule.Flattern(pair.schedules)), "\n",
-				"Expected:", fmt.Sprintf("\n%s", pair.expected.(*Node).Dump(0, "")), "\n",
-				"Got:     ", fmt.Sprintf("\n%s", pair.root.Dump(0, "")), "\n",
-			)
+			for j := 1; j < len(pair.schedules); j++ {
+				pair.fakeRoot.Insert(pair.schedules[j])
+			}
+			if pair.fakeRoot.Left != nil {
+				if !reflect.DeepEqual(pair.expected, pair.fakeRoot.Left) {
+					t.Error(
+						"[ Testcase: TestInsert ", i, " ]\n",
+						"For Schedules:     ", fmt.Sprintf("%s", schedule.Flattern(pair.schedules)), "\n",
+						"Expected:", fmt.Sprintf("\n%s", pair.expected.(*Node).Dump(0, "")), "\n",
+						"Got:     ", fmt.Sprintf("\n%s", pair.fakeRoot.Dump(0, "")), "\n",
+					)
+				}
+			} else if pair.fakeRoot.Right != nil {
+				if !reflect.DeepEqual(pair.expected, pair.fakeRoot.Right) {
+					t.Error(
+						"[ Testcase: TestInsert ", i, " ]\n",
+						"For Schedules:     ", fmt.Sprintf("%s", schedule.Flattern(pair.schedules)), "\n",
+						"Expected:", fmt.Sprintf("\n%s", pair.expected.(*Node).Dump(0, "")), "\n",
+						"Got:     ", fmt.Sprintf("\n%s", pair.fakeRoot.Right.Dump(0, "")), "\n",
+					)
+				}
+			}
 		}
 	}
 }
