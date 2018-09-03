@@ -1,4 +1,4 @@
-package avltree
+package intervaltree
 
 import (
 	"algo/doublebooked/schedule"

@@ -1,4 +1,4 @@
-package avltree
+package intervaltree
 
 import (
 	"algo/doublebooked/schedule"
@@ -9,11 +9,11 @@ type Tree struct {
 	Root *Node
 }
 
-func (t *Tree) Insert(schedule schedule.Schedule) (err error, dup bool) {
+func (t *Tree) Insert(schedule schedule.Schedule) (dup bool, err error) {
 
 	if !schedule.IsValid() {
 		err = fmt.Errorf("Invalid Schedule Input %s", schedule)
-		return err, false
+		return false, err
 	}
 	if t.Root == nil {
 		t.Root = &Node{Schedule: schedule, MaxEnd: schedule.End}
@@ -24,7 +24,7 @@ func (t *Tree) Insert(schedule schedule.Schedule) (err error, dup bool) {
 		t.rebalance()
 	}
 
-	return nil, dup
+	return dup, nil
 }
 
 func (t *Tree) rebalance() {

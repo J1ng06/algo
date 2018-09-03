@@ -1,4 +1,4 @@
-package avltree
+package intervaltree
 
 import (
 	"algo/doublebooked/schedule"
@@ -633,6 +633,25 @@ func TestOverlap(t *testing.T) {
 			expected: [][2]schedule.Schedule{
 				{schedule.Schedule{0, 1}, schedule.Schedule{0, 2}},
 				{schedule.Schedule{0, 1}, schedule.Schedule{0, 3}},
+			},
+		},
+		{
+			node: &Node{
+				Schedule: schedule.Schedule{0, 3},
+				MaxEnd:   4,
+				Left: &Node{
+					Schedule: schedule.Schedule{0, 2},
+					MaxEnd:   2,
+					bal:      0},
+				Right: &Node{
+					Schedule: schedule.Schedule{1, 4},
+					MaxEnd:   4,
+				},
+				bal: 0},
+			schedule: schedule.Schedule{1, 4},
+			expected: [][2]schedule.Schedule{
+				{schedule.Schedule{0, 2}, schedule.Schedule{1, 4}},
+				{schedule.Schedule{0, 3}, schedule.Schedule{1, 4}},
 			},
 		},
 	}

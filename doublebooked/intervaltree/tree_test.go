@@ -1,7 +1,8 @@
-package avltree
+package intervaltree
 
 import (
 	"algo/doublebooked/schedule"
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
@@ -12,51 +13,15 @@ type testNewTreePair struct {
 	expected  interface{}
 }
 
-// func TestNewTree(t *testing.T) {
-// 	testCases := []testNewTreePair{
-// 		{
-// 			schedules: []schedule.Schedule{
-// 				schedule.Schedule{0, 1},
-// 				schedule.Schedule{0, 2},
-// 			},
-// 			expected: &Tree{Root: &Node{Schedule: schedule.Schedule{0, 1}, MaxEnd: 2, Right: &Node{Schedule: schedule.Schedule{0, 2}, MaxEnd: 2, bal: 0}, bal: 1}},
-// 		},
-// 		{
-// 			schedules: []schedule.Schedule{
-// 				schedule.Schedule{1, 1},
-// 				schedule.Schedule{0, 2},
-// 			},
-// 			expected: fmt.Errorf("Invalid Schedule Input [1, 1]"),
-// 		},
-// 	}
-// 	for i, pair := range testCases {
-
-// 		result, err := NewTree(pair.schedules)
-// 		if err != nil {
-// 			if !reflect.DeepEqual(pair.expected, err) {
-// 				t.Error(
-// 					"[ Testcase: TestRotateLeft ", i, " ]\n",
-// 					"For Schedules:     ", fmt.Sprintf("%+v", pair.schedules), "\n",
-// 					"Expected:", fmt.Sprintf("\n%s", pair.expected.(error).Error()), "\n",
-// 					"Got:     ", fmt.Sprintf("\n%s", err.Error()), "\n",
-// 				)
-// 			}
-// 		} else {
-// 			if !reflect.DeepEqual(pair.expected, result) {
-// 				t.Error(
-// 					"[ Testcase: TestNewTree ", i, " ]\n",
-// 					"For Schedules:     ", fmt.Sprintf("%+v", pair.schedules), "\n",
-// 					"Expected:", fmt.Sprintf("\n%s", pair.expected.(*Tree).Dump()), "\n",
-// 					"Got:     ", fmt.Sprintf("\n%s", result.Dump()), "\n",
-// 				)
-// 			}
-// 		}
-// 	}
-
-// }
-
 func TestTreeInsert(t *testing.T) {
 	testCases := []testNewTreePair{
+		{
+			schedules: []schedule.Schedule{
+				schedule.Schedule{24, 21},
+				schedule.Schedule{20, 24},
+			},
+			expected: errors.New("Invalid Schedule Input"),
+		},
 		{
 			schedules: []schedule.Schedule{
 				schedule.Schedule{0, 1},
@@ -106,10 +71,24 @@ func TestTreeInsert(t *testing.T) {
 
 		tree := new(Tree)
 
+		var err error
 		for i := 0; i < len(pair.schedules); i++ {
-			tree.Insert(pair.schedules[i])
+			if _, err = tree.Insert(pair.schedules[i]); err != nil {
+				break
+			}
 		}
 
+		if err != nil {
+			if err.Error() != "Invalid Schedule Input [24, 21]" {
+				t.Error(
+					"[ Testcase: TestDoubleBooked ", i, " ]\n",
+					"For Node:     ", fmt.Sprintf("%+v", pair.schedules), "\n",
+					"Expected:", fmt.Sprintf("\n%+v", pair.expected.(error).Error()), "\n",
+					"Got:     ", fmt.Sprintf("\n%+v", err.Error()), "\n",
+				)
+			}
+			continue
+		}
 		if !reflect.DeepEqual(pair.expected, tree) {
 			t.Error(
 				"[ Testcase: TestTreeInsert ", i, " ]\n",

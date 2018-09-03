@@ -2,6 +2,7 @@ package main
 
 import (
 	"algo/doublebooked/schedule"
+	"errors"
 	"fmt"
 	"testing"
 )
@@ -13,6 +14,13 @@ type testDoubleBookedPair struct {
 
 func TestDoubleBooked(t *testing.T) {
 	var testCases = []testDoubleBookedPair{
+		{
+			schedules: []schedule.Schedule{
+				schedule.Schedule{24, 21},
+				schedule.Schedule{20, 24},
+			},
+			expected: errors.New("Invalid Schedule Input"),
+		},
 		{
 			schedules: []schedule.Schedule{
 				schedule.Schedule{21, 24},
@@ -90,7 +98,19 @@ func TestDoubleBooked(t *testing.T) {
 	}
 
 	for i, pair := range testCases {
-		results := DoubleBooked(pair.schedules)
+		results, err := DoubleBooked(pair.schedules)
+		if err != nil {
+			if err.Error() != "Invalid Schedule Input [24, 21]" {
+				t.Error(
+					"[ Testcase: TestDoubleBooked ", i, " ]\n",
+					"For Node:     ", fmt.Sprintf("%+v", pair.schedules), "\n",
+					"Expected:", fmt.Sprintf("\n%+v", pair.expected.(error).Error()), "\n",
+					"Got:     ", fmt.Sprintf("\n%+v", err.Error()), "\n",
+				)
+			}
+			continue
+		}
+
 		resultsMap := make(map[[2]schedule.Schedule]interface{})
 		for _, v := range results {
 			resultsMap[v] = new(interface{})
